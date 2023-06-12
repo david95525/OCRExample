@@ -9,12 +9,12 @@ namespace OCRExample.Controllers
         private const string folderName = "images/";
         private const string trainedDataFolderName = "tessdata";
         [HttpPost]
-        public String DoOCR(OcrModel request)
+        public IActionResult DoOCR(OcrModel request)
         {
 
-            string name = request.Image.FileName;
-            var image = request.Image;
-            request.DestinationLanguage= DestinationLanguage.English;
+            string name = request.file.FileName;
+            var image = request.file;
+            request.DestinationLanguage = DestinationLanguage.English;
             if (image.Length > 0)
             {
                 using (var fileStream = new FileStream(folderName + image.FileName, FileMode.Create))
@@ -35,7 +35,10 @@ namespace OCRExample.Controllers
                     Console.WriteLine(result);
                 }
             }
-            return String.IsNullOrWhiteSpace(result) ? "Ocr is finished. Return empty" : result;
+            return Json(new
+            {
+                result = String.IsNullOrWhiteSpace(result) ? "Ocr is finished. Return empty" : result
+            });
         }
     }
 }

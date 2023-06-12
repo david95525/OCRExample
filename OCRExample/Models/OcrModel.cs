@@ -3,7 +3,7 @@
     public class OcrModel
     {
         public String DestinationLanguage { get; set; }
-        public IFormFile Image { get; set; }
+        public IFormFile file { get; set; }
     }
 
     public static class DestinationLanguage

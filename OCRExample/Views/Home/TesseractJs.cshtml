@@ -1,0 +1,19 @@
+﻿<video autoplay></video>
+<button onclick="screenshot()">Screenshot Button</button>
+<canvas></canvas>
+<button onclick="tesserajs()">Tesserjs</button>
+
+<script>
+    function tesserajs() {
+        let dataURL = canvas.toDataURL('image/png');
+        Tesseract.recognize(
+            dataURL,
+            'eng',
+            { logger: m => console.log(m) }
+        ).then(({ data: { text } }) => {
+            console.log(data);
+        })
+    }
+</script>
+<!-- v4 -->
+<script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>

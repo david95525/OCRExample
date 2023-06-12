@@ -18,7 +18,11 @@ namespace OCRExample.Controllers
             return View();
         }
 
-        public IActionResult TesseractTest()
+        public IActionResult TesseractNet()
+        {
+            return View();
+        }
+        public IActionResult TesseractJs()
         {
             return View();
         }
