@@ -1,5 +1,4 @@
 ﻿var video = document.querySelector('video');
-var canvas = document.querySelector('canvas');
 var Constraints = {
     video: true
 };
@@ -14,9 +13,3 @@ navigator.mediaDevices
     .getUserMedia(Constraints)
     .then(handleSuccess)
     .catch(handleMediaStreamError);
-function screenshot() {
-    canvas.width = 640;
-    canvas.height = 480;
-    // 渲染
-    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-}

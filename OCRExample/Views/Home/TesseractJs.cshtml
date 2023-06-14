@@ -1,19 +1,7 @@
 ﻿<video autoplay></video>
-<button onclick="screenshot()">Screenshot Button</button>
-<canvas></canvas>
-<button onclick="tesserajs()">Tesserjs</button>
+<button id="startscan">開始掃描</button>
+<button id="stopscan">停止掃描</button>
+<canvas style="position:fixed;left:100%;"></canvas>
 
-<script>
-    function tesserajs() {
-        let dataURL = canvas.toDataURL('image/png');
-        Tesseract.recognize(
-            dataURL,
-            'eng',
-            { logger: m => console.log(m) }
-        ).then(({ data: { text } }) => {
-            console.log(data);
-        })
-    }
-</script>
-<!-- v4 -->
-<script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
+
+<script src='/js/tesseract.js'></script>

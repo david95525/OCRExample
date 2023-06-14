@@ -2,8 +2,14 @@
 <button onclick="Tesseract()">Tesseract</button>
 <button onclick="screenshot()">Screenshot Button</button>
 <canvas></canvas>
-<script> 
-
+<script>
+    var canvas = document.querySelector('canvas');
+    function screenshot() {
+        canvas.width = 640;
+        canvas.height = 480;
+        // 渲染
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
     function Tesseract() {
         // 建立 file
         let dataURL = canvas.toDataURL('image/png');
@@ -20,7 +26,7 @@
             body: formdata
         }).then(res => res.json())
             .then(resjson => alert(resjson.result));
-   }
+    }
 </script>
-
+<script src="~/js/webrtc.js" defer></script>
 
