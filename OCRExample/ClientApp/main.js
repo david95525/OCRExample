@@ -1,4 +1,5 @@
 ﻿import { createWorker } from 'tesseract.js';
+import Tesseract from 'tesseract.js';
 
 var canvas = document.querySelector('canvas');
 var video = document.querySelector('video');
@@ -8,7 +9,8 @@ var stopscan = document.getElementById("stopscan");
 var scanid = 0;
 startscan.addEventListener("click", function () {
     console.log("start");
-    scanid = setInterval(screenshot, 5000);
+    screenshot();
+    /*scanid = setInterval(screenshot, 5000);*/
 });
 stopscan.addEventListener("click", function () {
     clearInterval(scanid);
@@ -42,10 +44,15 @@ function screenshot() {
 function tesserajs() {
     let canvas_tessera = document.querySelector('canvas');
     let dataURL = canvas_tessera.toDataURL('image/png');
+ 
     (async () => {
-        const worker = await createWorker(/*{ logger: m => console.log(m) }*/);
+        const worker = await createWorker({langPath: './lang-data'});
         await worker.loadLanguage('eng');
         await worker.initialize('eng');
+        await worker.setParameters({
+            tessedit_char_whitelist: '0123456789',
+            classify_bln_numeric_mode:1
+        });
         const { data: { text } } = await worker.recognize(dataURL);
         if (text) {
             console.log(text);
