@@ -12,14 +12,19 @@ namespace OCRExample.Controllers
         {
             _logger = logger;
         }
-
+    
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult TesseractNet()
+        public IActionResult TesseractNet(int[] nums)
         {
+            
+            int[] test= nums;
+            int[] test02=new int[nums.Length];
+            int x;
+            x = test[0];
             return View();
         }
         public IActionResult TesseractJs()
