@@ -1,0 +1,17 @@
+﻿<div id="reader" width="600px"></div>
+<div id="content"></div>
+<script src="~/lib/html5-qrcode/html5-qrcode.min.js"></script>
+<script>
+    function onScanSuccess(decodedText, decodedResult) {
+        // handle the scanned code as you like, for example:
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+        let content = document.getElementById("content");
+        content.textContent = decodedText;
+    }
+
+    let config = { fps: 10, qrbox: { width: 250, height: 250 } };
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", config, /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess);
+
+</script>
