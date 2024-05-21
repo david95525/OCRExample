@@ -10,12 +10,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
     document.getElementById("stopscan").addEventListener("click", stopScan);
 })
 
-const easyScan = () => {
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", config, false);
-    html5QrcodeScanner.render(onScanSuccess);
-}
-
-
 const getCameras = () => {
     Html5Qrcode.getCameras()
         .then((devices) => {
@@ -35,6 +29,10 @@ function onScanSuccess(decodedText, decodedResult) {
     let content = document.getElementById("content");
     content.textContent = decodedText;
     stopScan();
+}
+const easyScan = () => {
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", config, false);
+    html5QrcodeScanner.render(onScanSuccess);
 }
 const proScan = () => {
 

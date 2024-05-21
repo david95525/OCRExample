@@ -2,9 +2,13 @@
 
 namespace OCRExample.Controllers
 {
-    public class ORCodeController : Controller
+    public class QRCodeController : Controller
     {
         public IActionResult html5qrcode()
+        {
+            return View();
+        }
+        public IActionResult instascan()
         {
             return View();
         }
