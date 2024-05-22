@@ -5,6 +5,11 @@
     {
       "library": "html5-qrcode@2.3.8",
       "destination": "wwwroot/lib/html5-qrcode/"
+    },
+    {
+      "provider": "unpkg",
+      "library": "@zxing/library@0.21.0",
+      "destination": "wwwroot/zxing/library/"
     }
   ]
 }
