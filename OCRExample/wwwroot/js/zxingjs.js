@@ -1,47 +1,29 @@
-﻿function decodeOnce(codeReader, selectedDeviceId) {
+﻿document.getElementById("startButton").addEventListener("click", Openscan);
+var scan_items = document.getElementById("scan_items");
+function decodeOnce(codeReader, selectedDeviceId) {
     codeReader.decodeFromInputVideoDevice(selectedDeviceId, 'video').then((result) => {
-        console.log(result)
-        document.getElementById('result').textContent = result.text
+        document.getElementById('add_device').value = result.text;
     }).catch((err) => {
-        console.error(err)
-        document.getElementById('result').textContent = err
+        console.error(err);
     })
 }
-
-
-window.addEventListener('load', function () {
+function Openscan() {
     let selectedDeviceId;
-    const codeReader = new ZXing.BrowserQRCodeReader()
-    console.log('ZXing code reader initialized')
 
+    const codeReader = new ZXing.BrowserQRCodeReader();
+    console.log('ZXing code reader initialized');
     codeReader.getVideoInputDevices()
         .then((videoInputDevices) => {
-            const sourceSelect = document.getElementById('sourceSelect')
-            selectedDeviceId = videoInputDevices[0].deviceId
-            if (videoInputDevices.length >= 1) {
-                videoInputDevices.forEach((element) => {
-                    const sourceOption = document.createElement('option')
-                    sourceOption.text = element.label
-                    sourceOption.value = element.deviceId
-                    sourceSelect.appendChild(sourceOption)
-                });
-                sourceSelect.onchange = () => {
-                    selectedDeviceId = sourceSelect.value;
-                };
-                let sourceSelectPanel = document.getElementById('sourceSelectPanel')
-                sourceSelectPanel.style.display = 'block'
-            }
-            document.getElementById('startButton').addEventListener('click', () => {
-                decodeOnce(codeReader, selectedDeviceId);
-                console.log(`Started decode from camera with id ${selectedDeviceId}`)
-            })
+            selectedDeviceId = videoInputDevices[0].deviceId;
+            decodeOnce(codeReader, selectedDeviceId);
             document.getElementById('resetButton').addEventListener('click', () => {
-                codeReader.reset()
-                document.getElementById('result').textContent = '';
+                codeReader.reset();
+                scan_items.classList.add("hidden");
+                document.getElementById('add_device').value = '';
                 console.log('Reset.')
-            })
-        })
+            });
+        }).then(() => { scan_items.classList.remove("hidden"); })
         .catch((err) => {
             console.error(err)
         });
-});
+};
