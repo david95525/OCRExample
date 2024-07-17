@@ -1,13 +1,19 @@
-﻿<div class="col">
-    <h6>Image Preview:</h6>
-    <img class="img" id="avatar" />
-</div>
-<input type="file" name="image" id="image" multiple accept="image/*" />
-<button id="upload">Save</button>
+﻿<!--視訊串流顯示位置 -->
+<video id="videoElement" class="videoElement" autoplay muted playsinline ></video>
+
+<!--繪製截圖 -->
+<h6>Image Preview:</h6>
+<div class="col" id="imageContainer"></div>
+<button id="startCam">startCam</button>
+<button id="capture">capture</button>
+<button id="upload">Upload</button>
+
+
 <div>SYS</div>
 <div id="sys"></div>
 <div>DIA</div>
 <div id="dia"></div>
 <div>PUL</div>
 <div id="pul"></div>
+
 <script src="/js/aiversion.js"></script>

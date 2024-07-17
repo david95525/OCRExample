@@ -41,9 +41,12 @@ namespace OCRExample.Controllers
             float Confidence = result.Caption.Confidence;
             int[] measurement = new int[3];
             int order = 0;
+            Console.WriteLine(Caption);
+            Console.WriteLine(Confidence);
             foreach (DetectedTextBlock block in result.Read.Blocks)
                 foreach (DetectedTextLine line in block.Lines)
                 {
+                    Console.WriteLine(line.Text);
                     if (order < 3)
                     {
                         if (int.TryParse(line.Text, out measurement[order]))

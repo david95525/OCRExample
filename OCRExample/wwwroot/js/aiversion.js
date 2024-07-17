@@ -13,11 +13,45 @@ const convertBase64 = (file) => {
         };
     });
 };
-document.getElementById('image').addEventListener("change", async function () {
-    let file = document.getElementById('image').files[0];
-    base64 = await convertBase64(file);
-    document.getElementById("avatar").src = base64;
-});
+function startCam() {
+    const constraints = { video: { facingMode: "user" } };
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(function (stream) {
+                videoElement.srcObject = stream;
+                document.getElementById('capture').addEventListener("click", function () {
+                    let canvas = document.createElement("canvas");
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    canvas.getContext("2d").drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+                    base64 = canvas.toDataURL("image/png", 1);
+                    // 直接顯示在前端
+                    let imageElement = document.createElement("img");
+                    let containerElement = document.getElementById("imageContainer");
+                    imageElement.src = base64;
+                    imageElement.id = "avatar";
+                    containerElement.innerHTML = "";
+                    containerElement.appendChild(imageElement);
+                });
+            })
+            .catch(function (error) {
+                console.log("無法取得視訊串流：", error);
+                alert(
+                    "您使用的瀏覽器不支援視訊串流，請使用其他瀏覽器，再重新開啟頁面！"
+                );
+            });
+    } else {
+        alert("您使用的瀏覽器不支援視訊串流，請使用其他瀏覽器，再重新開啟頁面！");
+    }
+}
+//document.getElementById('capture').addEventListener("click", async function () {
+//    let file = document.getElementById('image').files[0];
+//    base64 = await convertBase64(file);
+//    document.getElementById("avatar").src = base64;
+//});
+document.getElementById('startCam').addEventListener("click", startCam);
 document.getElementById('upload').addEventListener("click", Upload);
 
 function Upload() {
