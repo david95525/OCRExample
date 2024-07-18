@@ -53,17 +53,29 @@ function startCam() {
 //});
 document.getElementById('startCam').addEventListener("click", startCam);
 document.getElementById('upload').addEventListener("click", Upload);
+document.getElementById('ocr').addEventListener("click", ocr);
 
 function Upload() {
     var base64String = base64.replace('data:image/png;base64,', '');
     let data = { imagestring: base64String };
-    axios.post("/AzureAIVision/Analyze", data)
+    axios.post("/AzureAIVision/ImageAnalyze", data)
         .then(function (response) {
             if (response.status === 200) {
                 let result = response.data;
                 document.getElementById("sys").textContent = result.sys;
                 document.getElementById("dia").textContent = result.dia;
                 document.getElementById("pul").textContent = result.pul;
+            }
+        }).catch(err => { console.log(err); });
+}
+function ocr() {
+    var base64String = base64.replace('data:image/png;base64,', '');
+    let data = { imagestring: base64String };
+    axios.post("/AzureAIVision/OCR", data)
+        .then(function (response) {
+            if (response.status === 200) {
+                let result = response.data;
+                console.log(result);
             }
         }).catch(err => { console.log(err); });
 }
