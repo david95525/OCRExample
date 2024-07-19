@@ -26,17 +26,18 @@ namespace OCRExample.Controllers
         }
         [HttpPost]
         public IActionResult ImageAnalyze([FromBody] ImageModel model)
-        {
-            byte[] image = Convert.FromBase64String(model.imagestring);
-            BinaryData imageData = BinaryData.FromBytes(image);
-            ImageAnalysisClient client = new ImageAnalysisClient(new Uri(endpoint), new AzureKeyCredential(key));
-
-            //string imgAFIB = Path.Combine(_env.WebRootPath, "images/microlifebpm.png");
-            //using FileStream stream = new FileStream(imgAFIB, FileMode.Open);
+        {         
+            //byte[] image = Convert.FromBase64String(model.imagestring);
+            //BinaryData imageData = BinaryData.FromBytes(image);
+            //string filePath = Path.Combine(_env.WebRootPath, "images/microlifebpm.png");
+            //FileStream stream = new FileStream(filePath, FileMode.Create);
+            //stream.Write(image, 0, image.Length);
+            //stream.Close();
             //BinaryData imageData = BinaryData.FromStream(stream);
-
+            ImageAnalysisClient client = new ImageAnalysisClient(new Uri(endpoint), new AzureKeyCredential(key));            
+            Uri imageuri = new Uri("https://i.ibb.co/94XFRvb/microlifebpm.png");
             ImageAnalysisResult result = client.Analyze(
-                imageData,
+                imageuri,
                 VisualFeatures.Caption | VisualFeatures.Read,
                 new ImageAnalysisOptions { GenderNeutralCaption = true });
             string Caption = result.Caption.Text;
@@ -72,35 +73,13 @@ namespace OCRExample.Controllers
         }
         public async Task<IActionResult> OCR([FromBody] ImageModel model)
         {
-            byte[] image = Convert.FromBase64String(model.imagestring);
-            string filePath = Path.Combine(_env.WebRootPath, "images/test01.png");
-            FileStream stream = new FileStream(filePath, FileMode.Create);
-            stream.Write(image, 0, image.Length);
-            stream.Close();
-            Console.WriteLine("Azure Cognitive Services Computer Vision - .NET quickstart example");
-            Console.WriteLine();
 
             ComputerVisionClient client = new ComputerVisionClient(new ApiKeyServiceClientCredentials(key)) { Endpoint = endpoint };
-            // Extract text (OCR) from a URL image using the Read API
-            Console.WriteLine("----------------------------------------------------------");
-            Console.WriteLine("READ FILE FROM URL");
-            Console.WriteLine();
-
-            // Read text from URL
-            var textHeaders = await client.ReadAsync("https://ocrresearch.azurewebsites.net/images/test01.png");
-            // After the request, get the operation location (operation ID)
+            var textHeaders = await client.ReadAsync("https://i.ibb.co/94XFRvb/microlifebpm.png");
             string operationLocation = textHeaders.OperationLocation;
-            Thread.Sleep(2000);
-
-            // Retrieve the URI where the extracted text will be stored from the Operation-Location header.
-            // We only need the ID and not the full URL
             const int numberOfCharsInOperationId = 36;
             string operationId = operationLocation.Substring(operationLocation.Length - numberOfCharsInOperationId);
-
-            // Extract the text
             ReadOperationResult results;
-            Console.WriteLine($"Extracting text from URL file {Path.GetFileName("https://ocrresearch.azurewebsites.net/images/test01.png")}...");
-            Console.WriteLine();
             do
             {
                 results = await client.GetReadResultAsync(Guid.Parse(operationId));
@@ -110,7 +89,6 @@ namespace OCRExample.Controllers
 
             int[] measurement = new int[3];
             int order = 0;
-            Console.WriteLine();
             var textUrlFileResults = results.AnalyzeResult.ReadResults;
             foreach (Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models.ReadResult page in textUrlFileResults)
             {
@@ -130,7 +108,6 @@ namespace OCRExample.Controllers
             }
             return Ok(new
             {
-                filePath = filePath,
                 sys = measurement[0],
                 dia = measurement[1],
                 pul = measurement[2]

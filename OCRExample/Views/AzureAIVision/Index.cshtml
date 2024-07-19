@@ -1,23 +1,15 @@
-﻿<!--視訊串流顯示位置 -->
-<video id="videoElement" class="videoElement" autoplay muted playsinline></video>
+﻿<video id="videoElement" class="videoElement" autoplay muted playsinline></video>
 
-<!--繪製截圖 -->
 <h6>Image Preview:</h6>
+<img src="/images/microlifebpm.png" width="200" height="200" />
 <div class="col" id="imageContainer"></div>
 <button id="startCam">startCam</button>
 <button id="capture">capture</button>
-<button id="upload">Upload</button>
-
-<div class="row">
-    <div class="col">
-        <img src="/images/test.png" width="200" height="200"/>
-    </div>
-    <div class="col">
-        <button id="ocr">ocr</button>
-    </div>
+<div id="info"></div>
+<div id="btn">
+    <button id="upload">finished</button>
+    <button id="confirm" hidden>Confirm</button>
 </div>
-
-
 <div>SYS</div>
 <div id="sys"></div>
 <div>DIA</div>
@@ -25,4 +17,5 @@
 <div>PUL</div>
 <div id="pul"></div>
 
+<button id="ocr">ocr</button>
 <script src="/js/aiversion.js"></script>

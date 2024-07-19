@@ -65,6 +65,15 @@ function Upload() {
                 document.getElementById("sys").textContent = result.sys;
                 document.getElementById("dia").textContent = result.dia;
                 document.getElementById("pul").textContent = result.pul;
+
+                document.getElementById("info").innerText = "   Please check the information.If it is correct, click Confirm.If not, click Try Again.";
+                let confrombtn = document.getElementById('confirm');
+                document.getElementById('upload').innerText = "Try again";
+                confrombtn.removeAttribute("hidden");
+                confrombtn.addEventListener("click", function () {
+                    confrombtn.setAttribute("hidden","");
+                    document.getElementById('upload').innerText = "finished";
+                });
             }
         }).catch(err => { console.log(err); });
 }
@@ -75,7 +84,9 @@ function ocr() {
         .then(function (response) {
             if (response.status === 200) {
                 let result = response.data;
-                console.log(result);
+                document.getElementById("sys").textContent = result.sys;
+                document.getElementById("dia").textContent = result.dia;
+                document.getElementById("pul").textContent = result.pul;
             }
         }).catch(err => { console.log(err); });
 }
