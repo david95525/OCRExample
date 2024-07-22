@@ -1,4 +1,5 @@
 ﻿var base64 = "";
+var resultlist = [];
 const convertBase64 = (file) => {
     return new Promise((resolve, reject) => {
         const fileReader = new FileReader();
@@ -14,7 +15,7 @@ const convertBase64 = (file) => {
     });
 };
 function startCam() {
-    const constraints = { video: { facingMode: "user" } };
+    const constraints = { video: { facingMode: "environment" } };
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices
             .getUserMedia(constraints)
@@ -51,9 +52,8 @@ function startCam() {
 //    base64 = await convertBase64(file);
 //    document.getElementById("avatar").src = base64;
 //});
-document.getElementById('startCam').addEventListener("click", startCam);
+document.getElementById('Scan').addEventListener("click", startCam);
 document.getElementById('upload').addEventListener("click", Upload);
-document.getElementById('ocr').addEventListener("click", ocr);
 
 function Upload() {
     var base64String = base64.replace('data:image/png;base64,', '');
@@ -62,31 +62,23 @@ function Upload() {
         .then(function (response) {
             if (response.status === 200) {
                 let result = response.data;
-                document.getElementById("sys").textContent = result.sys;
-                document.getElementById("dia").textContent = result.dia;
-                document.getElementById("pul").textContent = result.pul;
-
-                document.getElementById("info").innerText = "   Please check the information.If it is correct, click Confirm.If not, click Try Again.";
-                let confrombtn = document.getElementById('confirm');
-                document.getElementById('upload').innerText = "Try again";
-                confrombtn.removeAttribute("hidden");
-                confrombtn.addEventListener("click", function () {
-                    confrombtn.setAttribute("hidden","");
-                    document.getElementById('upload').innerText = "finished";
+                document.getElementById("sys").value = result.sys;
+                document.getElementById("dia").value = result.dia;
+                document.getElementById("pul").value = result.pul;
+                resultlist = result.resultlist;
+                let content = "";
+                resultlist.forEach(val => {
+                    content = content + " " + val;
                 });
+                document.getElementById("content").textContent = content;
             }
-        }).catch(err => { console.log(err); });
-}
-function ocr() {
-    var base64String = base64.replace('data:image/png;base64,', '');
-    let data = { imagestring: base64String };
-    axios.post("/AzureAIVision/OCR", data)
-        .then(function (response) {
-            if (response.status === 200) {
-                let result = response.data;
-                document.getElementById("sys").textContent = result.sys;
-                document.getElementById("dia").textContent = result.dia;
-                document.getElementById("pul").textContent = result.pul;
-            }
+            document.getElementById("info").innerText = "   Please check the information.If it is correct, click Confirm.If not, click Try Again.";
+            let confrombtn = document.getElementById('confirm');
+            document.getElementById('upload').innerText = "Try again";
+            confrombtn.removeAttribute("hidden");
+            confrombtn.addEventListener("click", function () {
+                confrombtn.setAttribute("hidden", "");
+                document.getElementById('upload').innerText = "finished";
+            });
         }).catch(err => { console.log(err); });
 }

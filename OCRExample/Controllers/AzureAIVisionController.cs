@@ -26,9 +26,9 @@ namespace OCRExample.Controllers
         }
         [HttpPost]
         public IActionResult ImageAnalyze([FromBody] ImageModel model)
-        {         
-            //byte[] image = Convert.FromBase64String(model.imagestring);
-            //BinaryData imageData = BinaryData.FromBytes(image);
+        {
+            byte[] image = Convert.FromBase64String(model.imagestring);
+            BinaryData imageData = BinaryData.FromBytes(image);
             //string filePath = Path.Combine(_env.WebRootPath, "images/microlifebpm.png");
             //FileStream stream = new FileStream(filePath, FileMode.Create);
             //stream.Write(image, 0, image.Length);
@@ -37,12 +37,13 @@ namespace OCRExample.Controllers
             ImageAnalysisClient client = new ImageAnalysisClient(new Uri(endpoint), new AzureKeyCredential(key));            
             Uri imageuri = new Uri("https://i.ibb.co/94XFRvb/microlifebpm.png");
             ImageAnalysisResult result = client.Analyze(
-                imageuri,
+                imageData,
                 VisualFeatures.Caption | VisualFeatures.Read,
                 new ImageAnalysisOptions { GenderNeutralCaption = true });
             string Caption = result.Caption.Text;
             float Confidence = result.Caption.Confidence;
             int[] measurement = new int[3];
+            List<string> resultlist = new List<string>();
             int order = 0;
             Console.WriteLine(Caption);
             Console.WriteLine(Confidence);
@@ -50,6 +51,7 @@ namespace OCRExample.Controllers
                 foreach (DetectedTextLine line in block.Lines)
                 {
                     Console.WriteLine(line.Text);
+                    resultlist.Add(line.Text);
                     if (order < 3)
                     {
                         if (int.TryParse(line.Text, out measurement[order]))
@@ -60,7 +62,7 @@ namespace OCRExample.Controllers
                 }
             return Ok(new
             {
-                Caption = Caption,
+                resultlist= resultlist,
                 Confidence = Confidence,
                 sys = measurement[0],
                 dia = measurement[1],
