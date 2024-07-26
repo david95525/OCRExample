@@ -34,7 +34,7 @@ namespace OCRExample.Controllers
             //stream.Write(image, 0, image.Length);
             //stream.Close();
             //BinaryData imageData = BinaryData.FromStream(stream);
-            ImageAnalysisClient client = new ImageAnalysisClient(new Uri(endpoint), new AzureKeyCredential(key));            
+            ImageAnalysisClient client = new ImageAnalysisClient(new Uri(endpoint), new AzureKeyCredential(key));
             Uri imageuri = new Uri("https://i.ibb.co/94XFRvb/microlifebpm.png");
             ImageAnalysisResult result = client.Analyze(
                 imageData,
@@ -62,7 +62,7 @@ namespace OCRExample.Controllers
                 }
             return Ok(new
             {
-                resultlist= resultlist,
+                resultlist = resultlist,
                 Confidence = Confidence,
                 sys = measurement[0],
                 dia = measurement[1],
@@ -89,7 +89,7 @@ namespace OCRExample.Controllers
             while ((results.Status == OperationStatusCodes.Running ||
                 results.Status == OperationStatusCodes.NotStarted));
 
-            int[] measurement = new int[3];
+            int[] measurement = new int[4];
             int order = 0;
             var textUrlFileResults = results.AnalyzeResult.ReadResults;
             foreach (Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models.ReadResult page in textUrlFileResults)
@@ -97,7 +97,7 @@ namespace OCRExample.Controllers
                 foreach (Line line in page.Lines)
                 {
                     Console.WriteLine(line.Text);
-                    if (order < 3)
+                    if (order < 4)
                     {
                         if (int.TryParse(line.Text, out measurement[order]))
                         {
@@ -110,9 +110,9 @@ namespace OCRExample.Controllers
             }
             return Ok(new
             {
-                sys = measurement[0],
-                dia = measurement[1],
-                pul = measurement[2]
+                sys = measurement[1],
+                dia = measurement[2],
+                pul = measurement[3]
             });
         }
     }

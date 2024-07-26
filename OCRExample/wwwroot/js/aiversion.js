@@ -25,7 +25,9 @@ function startCam() {
                     let canvas = document.createElement("canvas");
                     canvas.width = videoElement.videoWidth;
                     canvas.height = videoElement.videoHeight;
-                    canvas.getContext("2d").drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                    let ctx = canvas.getContext("2d");
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(videoElement, 0, 0, canvas.width / 2, canvas.height / 2);
 
                     base64 = canvas.toDataURL("image/png", 1);
                     // 直接顯示在前端
