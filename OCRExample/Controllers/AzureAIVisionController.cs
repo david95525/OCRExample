@@ -3,8 +3,6 @@ using Azure.AI.Vision.ImageAnalysis;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Azure;
-using System;
-using System.Security.Cryptography;
 namespace OCRExample.Controllers
 {
     public class AzureAIVisionController : Controller

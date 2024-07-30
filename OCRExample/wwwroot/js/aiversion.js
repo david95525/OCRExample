@@ -15,6 +15,10 @@ const convertBase64 = (file) => {
     });
 };
 function startCam() {
+    let videoElement = document.getElementById("videoElement");
+    let containerElement = document.getElementById("imageContainer");
+    videoElement.removeAttribute("hidden");
+    containerElement.setAttribute("hidden", "");
     const constraints = { video: { facingMode: "environment" } };
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices
@@ -28,15 +32,15 @@ function startCam() {
                     let ctx = canvas.getContext("2d");
                     ctx.imageSmoothingEnabled = false;
                     ctx.drawImage(videoElement, 0, 0, canvas.width / 2, canvas.height / 2);
-
                     base64 = canvas.toDataURL("image/png", 1);
+                    videoElement.setAttribute("hidden", "");
                     // 直接顯示在前端
-                    let imageElement = document.createElement("img");
-                    let containerElement = document.getElementById("imageContainer");
+                    let imageElement = document.createElement("img");                
                     imageElement.src = base64;
                     imageElement.id = "avatar";
                     containerElement.innerHTML = "";
                     containerElement.appendChild(imageElement);
+                    containerElement.removeAttribute("hidden");
                 });
             })
             .catch(function (error) {
