@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - OCRExample</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/common.css?20241206" />
     <link rel="stylesheet" href="~/OCRExample.styles.css" asp-append-version="true" />
 </head>
 <body>
@@ -26,7 +27,7 @@
                             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">AI</a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a class="dropdown-item" asp-area="" asp-controller="AzureAIVision" asp-action="Index">Azure</a>
+                                    <a class="dropdown-item" asp-area="" asp-controller="AIVision" asp-action="Index">AIVision</a>
                                 </li>
                             </ul>
                         </li>
@@ -70,7 +71,6 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/axios/axios.min.js"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
