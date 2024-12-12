@@ -82,7 +82,24 @@ namespace OCRExample.Controllers
                 locations = locations
             });
         }
-
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Saveimage([FromBody] ImageModel model)
+        {
+            string file = Path.Combine(_env.WebRootPath, "scan", "2038", "1");
+            if (!Directory.Exists(file))
+            {
+                Directory.CreateDirectory(file);
+            }
+            string filename = $"test_{DateTime.Now.ToString("yyyyMMddhhmm")}.jpg";
+            string filePath = Path.Combine(file, filename);
+            MemoryStream ms = new MemoryStream(Convert.FromBase64String(model.imagestring));
+            FileStream stream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            byte[] b = ms.ToArray();
+            stream.Write(b, 0, b.Length);
+            stream.Close();
+            return Ok();
+        }
         private (int sys, int dia, int pul, bool ContainMicrolife, List<string> resultlist, List<LocationModel> locations)
             Process(IReadOnlyList<DetectedTextLine> lines, bool ContainMicrolife, List<string> resultlist)
         {

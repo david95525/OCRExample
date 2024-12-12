@@ -1,18 +1,12 @@
 ﻿var customscanElement = document.getElementById('custom_Scan');
-var customcloseElement = document.getElementById("custom_Close");
-const urlstring = "https://westeurope.api.cognitive.microsoft.com/customvision/v3.0/Prediction/e5a38042-8d44-412e-ace3-6bc4e3c51bee/detect/iterations/Iteration10/image";
+var RescanElement = document.getElementById("Rescan");
+const urlstring = "https://westeurope.api.cognitive.microsoft.com/customvision/v3.0/Prediction/e5a38042-8d44-412e-ace3-6bc4e3c51bee/detect/iterations/Iteration16/image";
 customscanElement.addEventListener("click", CustomstartCam);
-customcloseElement.addEventListener("click", function () {
-    Close();
-    customcloseElement.setAttribute("hidden", "");
-    customscanElement.removeAttribute("hidden");
-    scanElement.removeAttribute("hidden");
-});
 function CustomstartCam() {
     scanElement.setAttribute("hidden", "");
     customscanElement.setAttribute("hidden", "");
     videoElement.removeAttribute("hidden");
-    customcloseElement.removeAttribute("hidden");
+    RescanElement.removeAttribute("hidden");
     //scan
     const constraints = { video: { facingMode: "environment" } };
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -23,20 +17,11 @@ function CustomstartCam() {
                 tracks = stream.getTracks();
                 scanningElement.removeAttribute("hidden");
                 timeoutID = window.setTimeout(function () {
-                    //截圖上傳
-                    let canvas = document.createElement("canvas");
-                    let [width, height] = videoDimensions(videoElement);
-                    canvas.width = width;
-                    canvas.height = height;
-                    let ctx = canvas.getContext("2d");
-                    ctx.imageSmoothingEnabled = false;
-                    ctx.drawImage(videoElement, 0, 0, width, height);
-                    canvas.toBlob((blob) => {
-                        if (blob) {
-                            CustomImageAnalyze(blob);
-                        }
-                    })
+                    Capture(videoElement);
                 }, 2000);
+                RescanElement.addEventListener("click", function () {
+                    Capture(videoElement);
+                });
             })
             .catch(function (error) {
                 console.log("無法取得視訊串流：", error);
@@ -48,11 +33,41 @@ function CustomstartCam() {
         alert("您使用的瀏覽器不支援視訊串流，請使用其他瀏覽器，再重新開啟頁面！");
     }
 }
-var toplist = [0, 0, 0];
-var numGroups = [[], [], []];
-var leftGroups = [[], [], []];
-var predictions = [];
+function Capture(videoElement) {
+    //截圖上傳
+    let canvas = document.createElement("canvas");
+    let [width, height] = videoDimensions(videoElement);
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(videoElement, 0, 0, width, height);
+    let downloadLink = document.createElement('a');
+    let timestamp = Date.now();
+    downloadLink.setAttribute('download', `canvas_${timestamp}.png`);
+    canvas.toBlob((blob) => {
+        if (blob) {
+            CustomImageAnalyze(blob);
+            let url = URL.createObjectURL(blob);
+            downloadLink.setAttribute('href', url);
+            downloadLink.click();
+        }
+    })
+    let Customaibase64 = canvas.toDataURL("image/png", 1).replace('data:image/png;base64,', '');
+    let data = { imagestring: Customaibase64 };
+    let VerificationToken = document.getElementsByName("__RequestVerificationToken")[0].value;
+    let config = { headers: { 'requestverificationtoken': VerificationToken } };
+    axios.post("/AiVision/Saveimage", data, config).then(function (response) { }).catch(err => { console.log(err); });
+}
+var toplist;
+var numGroups;
+var leftGroups;
+var predictions;
 function CustomImageAnalyze(customimage) {
+    toplist = [0, 0, 0];
+    numGroups = [[], [], []];
+    leftGroups = [[], [], []];
+    predictions = [];
     let config = {
         headers: {
             'Content-Type': 'application/octet-stream',
@@ -62,20 +77,19 @@ function CustomImageAnalyze(customimage) {
     axios.post(urlstring, customimage, config)
         .then(function (response) {
             if (response.status === 200) {
-                scanningElement.setAttribute("hidden", "");
+                /* scanningElement.setAttribute("hidden", "");*/
                 predictions = response.data.predictions;
                 let topcontent = "";
                 predictions.forEach((prediction) => {
                     //排除條件
-                    if (prediction.probability <= 0.45 || isNaN(prediction.tagName)) return;
-                    //篩選同高度
+                    if (prediction.probability < 0.4 || isNaN(prediction.tagName)) return;
                     for (let i = 0; i < toplist.length; i++) {
                         //以第一個高度為基準
                         if (toplist[i] === 0) {
                             toplist[i] = Math.round(prediction.boundingBox.top * 100) / 100;
                             numGroups[i].push(parseInt(prediction.tagName));
                             leftGroups[i][0] = prediction.boundingBox.left;
-                            topcontent = topcontent + " " + prediction.boundingBox.top;
+                            topcontent = topcontent + " 1:" + prediction.boundingBox.top;
                             return;
                         }
                         //第一個高度區間內視為同一列數字
@@ -88,7 +102,6 @@ function CustomImageAnalyze(customimage) {
                 });
                 document.getElementById("topcontent").textContent = topcontent;
                 let content = "";
-                toplist.forEach((top) => { content = content + " " + top; });
                 if (numGroups[0].length > 0) {
                     //先把num和top對應起來
                     let combined = toplist.map((top, index) => ({ top, number: parseInt(numGroups[index].join(''), 10) }));
@@ -99,11 +112,17 @@ function CustomImageAnalyze(customimage) {
                         if (isNaN(item.number)) return 0;
                         else return item.number;
                     });
+                    let results = [sys, dia, pul];
                     document.getElementById("content").textContent = content + " " + sys + " " + dia + " " + pul
-                    renderPredictions([
-                        { value: sys.toString(), x: 10, y: 25, x1: 0, x2: 0, y1: 0, y3: 0 },
-                        { value: dia.toString(), x: 10, y: 65, x1: 0, x2: 0, y1: 0, y3: 0 },
-                        { value: pul.toString(), x: 10, y: 105, x1: 0, x2: 0, y1: 0, y3: 0 }]);
+                    let renders = [];
+                    let index = 0;
+                    for (var i = 0; i < results.length; i++) {
+                        if (results[i] != 0) {
+                            renders.push({ value: results[i].toString(), x: 10, y: 25 + index * 40, x1: 0, x2: 0, y1: 0, y3: 0 })
+                            index++;
+                        }
+                    }
+                    renderPredictions(renders);
                 }
             }
         }).catch(err => { console.log(err); });

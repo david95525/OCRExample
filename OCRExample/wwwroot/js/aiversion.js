@@ -160,6 +160,9 @@ function Back() {
         }).catch(err => { console.log(err); });
 }
 const renderPredictions = function (predictions) {
+    if (document.getElementById("result_show")) {
+        document.getElementById("result_show").remove();
+    }
     let canvas = document.createElement("canvas");
     canvas.id = "result_show";
     let [width, height] = videoDimensions(videoElement);
@@ -190,16 +193,16 @@ const renderPredictions = function (predictions) {
         }
         let x = (prediction.x + textwidth / 2);
         let y = (prediction.y + textheight / 2);
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "#00B5EC";
         ctx.fillRect(prediction.x, prediction.y, 44, 26);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(prediction.x, prediction.y, 44, 26)
         // Draw the text last to ensure it's on top.
         ctx.font = "20px sans-serif";
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.fillText(prediction.value, x + length, y + 1);
-        //ctx.strokeStyle = '#000000';
-        //ctx.lineWidth = 0.5;
-        //ctx.strokeText(prediction.value, x + length, y + 1);
 
     });
     document.body.append(canvas);
