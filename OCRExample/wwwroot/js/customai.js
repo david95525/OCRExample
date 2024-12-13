@@ -1,12 +1,13 @@
 ﻿var customscanElement = document.getElementById('custom_Scan');
-var RescanElement = document.getElementById("Rescan");
-const urlstring = "https://westeurope.api.cognitive.microsoft.com/customvision/v3.0/Prediction/e5a38042-8d44-412e-ace3-6bc4e3c51bee/detect/iterations/Iteration16/image";
+var Rescan2Element = document.getElementById("Rescan2");
+const urlstring =
+    "https://westeurope.api.cognitive.microsoft.com/customvision/v3.0/Prediction/e5a38042-8d44-412e-ace3-6bc4e3c51bee/detect/iterations/Iteration16/image";
 customscanElement.addEventListener("click", CustomstartCam);
 function CustomstartCam() {
     scanElement.setAttribute("hidden", "");
     customscanElement.setAttribute("hidden", "");
     videoElement.removeAttribute("hidden");
-    RescanElement.removeAttribute("hidden");
+    Rescan2Element.removeAttribute("hidden");
     //scan
     const constraints = { video: { facingMode: "environment" } };
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -16,11 +17,11 @@ function CustomstartCam() {
                 videoElement.srcObject = stream;
                 tracks = stream.getTracks();
                 scanningElement.removeAttribute("hidden");
-                timeoutID = window.setTimeout(function () {
-                    Capture(videoElement);
+                window.setTimeout(function () {
+                    Capture_ver1_2(videoElement);
                 }, 2000);
-                RescanElement.addEventListener("click", function () {
-                    Capture(videoElement);
+                Rescan2Element.addEventListener("click", function () {
+                    Capture_ver1_2(videoElement);
                 });
             })
             .catch(function (error) {
@@ -33,7 +34,7 @@ function CustomstartCam() {
         alert("您使用的瀏覽器不支援視訊串流，請使用其他瀏覽器，再重新開啟頁面！");
     }
 }
-function Capture(videoElement) {
+function Capture_ver1_2(videoElement) {
     //截圖上傳
     let canvas = document.createElement("canvas");
     let [width, height] = videoDimensions(videoElement);
@@ -59,15 +60,11 @@ function Capture(videoElement) {
     let config = { headers: { 'requestverificationtoken': VerificationToken } };
     axios.post("/AiVision/Saveimage", data, config).then(function (response) { }).catch(err => { console.log(err); });
 }
-var toplist;
-var numGroups;
-var leftGroups;
-var predictions;
 function CustomImageAnalyze(customimage) {
-    toplist = [0, 0, 0];
-    numGroups = [[], [], []];
-    leftGroups = [[], [], []];
-    predictions = [];
+    let toplist = [0, 0, 0];
+    let numGroups = [[], [], []];
+    let leftGroups = [[], [], []];
+    let predictions = [];
     let config = {
         headers: {
             'Content-Type': 'application/octet-stream',
@@ -77,7 +74,10 @@ function CustomImageAnalyze(customimage) {
     axios.post(urlstring, customimage, config)
         .then(function (response) {
             if (response.status === 200) {
-                /* scanningElement.setAttribute("hidden", "");*/
+                scanningElement.setAttribute("hidden", "");
+                if (document.getElementById("result_show")) {
+                    document.getElementById("result_show").remove();
+                }
                 predictions = response.data.predictions;
                 let topcontent = "";
                 predictions.forEach((prediction) => {
@@ -95,7 +95,7 @@ function CustomImageAnalyze(customimage) {
                         //第一個高度區間內視為同一列數字
                         if (toplist[i] + 0.034 > prediction.boundingBox.top && toplist[i] - 0.034 < prediction.boundingBox.top) {
                             topcontent = topcontent + " " + prediction.boundingBox.top;
-                            numberHandling(prediction.boundingBox.left, parseInt(prediction.tagName), i);
+                            numberHandling(prediction.boundingBox.left, parseInt(prediction.tagName), i, leftGroups, numGroups);
                             return;
                         }
                     }
@@ -127,7 +127,7 @@ function CustomImageAnalyze(customimage) {
             }
         }).catch(err => { console.log(err); });
 }
-function numberHandling(predictionLeft = 0, number = 0, order = 0) {
+function numberHandling(predictionLeft = 0, number = 0, order = 0, leftGroups = [], numGroups = []) {
     if (order < 0 || order > 2) return;
     var left = leftGroups[order];
     var num = numGroups[order];
@@ -154,11 +154,11 @@ function numberHandling(predictionLeft = 0, number = 0, order = 0) {
     if (left.length === 2) {
         //是否和[0]數字重複
         let point0 = Math.round(left[0] * 100) / 100;
-        if (predictionLeft < point0 + 0.02 && predictionLeft > point0 - 0.02 && number === num[0])
+        if (predictionLeft < point0 + 0.03 && predictionLeft > point0 - 0.03 && number === num[0])
             return;
         //是否和[1]數字重複
         let point1 = Math.round(left[1] * 100) / 100;
-        if (predictionLeft < point1 + 0.02 && predictionLeft > point1 - 0.02 && number === num[1])
+        if (predictionLeft < point1 + 0.03 && predictionLeft > point1 - 0.03 && number === num[1])
             return;
         //新值比[0]大 插入array最前面
         if (max < left[0]) {

@@ -1,7 +1,7 @@
 ﻿var videoElement = document.getElementById("videoElement");
 var scanElement = document.getElementById('Scan');
 let scanningElement = document.getElementById("scanning_view");
-let closeElement = document.getElementById("Close");
+var Rescan1Element = document.getElementById("Rescan1");
 //input
 var dateElement = document.getElementById('add_date_scan');
 var hourElement = document.getElementById('hour_scan');
@@ -10,33 +10,11 @@ var ap_modeElement = document.getElementById("ap_mode_scan");
 var sysElement = document.getElementById('sys');
 var diaElement = document.getElementById('dia');
 var pulElement = document.getElementById('pul');
-var base64 = "";
-var resultlist = [];
-scanElement.addEventListener("click", startCam);
-document.getElementById("scan_save_button").addEventListener("click", Back);
-closeElement.addEventListener("click", function () {
-    Close();
-    closeElement.setAttribute("hidden", "");
-    customscanElement.removeAttribute("hidden");
-    scanElement.removeAttribute("hidden");
-});
 //date
 let nowdate = moment(new Date()).format("YYYY/MM/DD");
 dateElement.value = nowdate;
 hourElement.value = 10;
 minuteElement.value = 12;
-//default
-scanningElement.setAttribute("hidden", "");
-videoElement.setAttribute("hidden", "");
-scanElement.innerText = "Scan";
-scanElement.removeAttribute("hidden");
-document.getElementById("content").textContent = "";
-sysElement.value = "";
-diaElement.value = "";
-pulElement.value = "";
-
-var timeoutID;
-var tracks;
 function videoDimensions(video) {
     let videoRatio = video.videoWidth / video.videoHeight;
     let width = video.offsetWidth, height = video.offsetHeight;
@@ -45,23 +23,13 @@ function videoDimensions(video) {
     else height = width / videoRatio;
     return [width, height];
 }
-function Close() {
-    if (document.getElementById("result_show")) {
-        document.getElementById("result_show").remove();
-    }
-    tracks.forEach((track) => {
-        track.stop();
-    });
-    videoElement.srcObject = null;
-    videoElement.setAttribute("hidden", "");
-    scanningElement.setAttribute("hidden", "");
-    document.getElementById("content").textContent = "";
-}
+document.getElementById("scan_save_button").addEventListener("click", Back);
+scanElement.addEventListener("click", startCam);
 function startCam() {
     scanElement.setAttribute("hidden", "");
     customscanElement.setAttribute("hidden", "");
     videoElement.removeAttribute("hidden");
-    closeElement.removeAttribute("hidden");
+    Rescan1Element.removeAttribute("hidden");
     //scan
     const constraints = { video: { facingMode: "environment" } };
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -71,17 +39,12 @@ function startCam() {
                 videoElement.srcObject = stream;
                 tracks = stream.getTracks();
                 scanningElement.removeAttribute("hidden");
-                timeoutID = window.setTimeout(function () {
-                    let canvas = document.createElement("canvas");
-                    let [width, height] = videoDimensions(videoElement);
-                    canvas.width = width;
-                    canvas.height = height;
-                    let ctx = canvas.getContext("2d");
-                    ctx.imageSmoothingEnabled = false;
-                    ctx.drawImage(videoElement, 0, 0, width, height);
-                    base64 = canvas.toDataURL("image/png", 1);
-                    ImageAnalyze();
+                window.setTimeout(function () {
+                    Capture_ver1_1(videoElement);
                 }, 2000);
+                Rescan1Element.addEventListener("click", function () {
+                    Capture_ver1_1(videoElement);
+                });
             })
             .catch(function (error) {
                 console.log("無法取得視訊串流：", error);
@@ -93,76 +56,91 @@ function startCam() {
         alert("您使用的瀏覽器不支援視訊串流，請使用其他瀏覽器，再重新開啟頁面！");
     }
 }
-function ImageAnalyze() {
+function Capture_ver1_1(videoElement) {
+    let canvas = document.createElement("canvas");
+    let [width, height] = videoDimensions(videoElement);
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(videoElement, 0, 0, width, height);
+    let base64 = canvas.toDataURL("image/png", 1);
+    ImageAnalyze(base64);
+}
+function ImageAnalyze(base64) {
     var base64String = base64.replace('data:image/png;base64,', '');
     let data = { imagestring: base64String };
     let VerificationToken = document.getElementsByName("__RequestVerificationToken")[0].value;
     let config = { headers: { 'requestverificationtoken': VerificationToken } }
+    let toplist = [];
+    let numGroups = [];
+    let predictions = [];
+    let sys_dia_pul_y1 = [0, 0, 0];
     axios.post("/AiVision/ImageAnalyze", data, config)
         .then(function (response) {
             if (response.status === 200) {
                 scanningElement.setAttribute("hidden", "");
-                let result = response.data;
-                sysElement.value = result.sys;
-                diaElement.value = result.dia;
-                pulElement.value = result.pul;
-                let locations = result.locations;
-                if (locations.length === 0) {
-                    locations = [{ x1: 0, x2: 0, y1: 0, y3: 0 }, { x1: 0, x2: 0, y1: 0, y3: 0 }, { x1: 0, x2: 0, y1: 0, y3: 0 }]
+                if (document.getElementById("result_show")) {
+                    document.getElementById("result_show").remove();
                 }
-                let predictions = [
-                    {
-                        value: result.sys.toString(), x: 10, y: 25,
-                        x1: locations[0].x1,
-                        x2: locations[0].x2,
-                        y1: locations[0].y1,
-                        y3: locations[0].y3
-                    },
-                    {
-                        value: result.dia.toString(), x: 10, y: 65,
-                        x1: locations[1].x1,
-                        x2: locations[1].x2,
-                        y1: locations[1].y1,
-                        y3: locations[1].y3
-                    },
-                    {
-                        value: result.pul.toString(), x: 10, y: 105,
-                        x1: locations[2].x1,
-                        x2: locations[2].x2,
-                        y1: locations[2].y1,
-                        y3: locations[2].y3
-                    }];
-                renderPredictions(predictions);
-                let content = "";
-                resultlist = result.resultlist;
-                resultlist.forEach(val => {
-                    content = content + " " + val;
+                let predictions = response.data.predictions;
+                let scancontent = "";
+                let ismicrolife = false;
+                predictions.forEach((prediction) => {
+                    if (prediction.tagName === "microlife") {
+                        ismicrolife = true;
+                    }
+                    if (prediction.tagName === "SYS") {
+                        sys_dia_pul_y1[0] = prediction.y1;
+                    }
+                    if (prediction.tagName === "DIA") {
+                        sys_dia_pul_y1[1] = prediction.y1;
+                    }
+                    if (prediction.tagName === "PUL") {
+                        sys_dia_pul_y1[2] = prediction.y1;
+                    }
+                    if (isNaN(prediction.tagName)) return;
+                    let number = parseInt(prediction.tagName);
+                    if (toplist[0] + 10 > prediction.y1 && toplist[0] - 10 < prediction.y1 && numGroups[0] === 1) {
+                        number = number + 100;
+                    }
+                    toplist.push(prediction.y1);
+                    numGroups.push(number);
+                    scancontent = scancontent + " " + `number:${number} y1:${prediction.y1}`;
                 });
-                content = content + " " + result.confidence;
-                document.getElementById("content").textContent = content;
-            }
-        }).catch(err => { console.log(err); });
-}
-
-function Back() {
-    let sys = document.getElementById("sys").value;
-    let dia = document.getElementById("dia").value;
-    let pul = document.getElementById("pul").value;
-    let data = { sys: sys, dia: dia, pul: pul };
-    let VerificationToken = document.getElementsByName("__RequestVerificationToken")[0].value;
-    let config = { headers: { 'requestverificationtoken': VerificationToken } }
-    axios.post("/AiVision/Back", data, config)
-        .then(function (response) {
-            if (response.status === 200) {
-                let result = response.data;
-                location.href = result.redirect_uri;
+                scancontent = scancontent + " " + `ismicrolife:${ismicrolife}`;
+                document.getElementById("content").textContent = scancontent;
+                if (!ismicrolife) return;
+                let sys = numGroups[0] ?? 0, dia = numGroups[1] ?? 0, pul = numGroups[2] ?? 0;
+                for (var i = 0; i < numGroups.length; i++) {
+                    if (toplist[i] + 10 > sys_dia_pul_y1[0] && toplist[i] - 10 < sys_dia_pul_y1[0]) {
+                        sys = numGroups[i];
+                        continue;
+                    }
+                    if (toplist[i] + 10 > sys_dia_pul_y1[1] && toplist[i] - 10 < sys_dia_pul_y1[1]) {
+                        if (sys === numGroups[i]) sys = 0;
+                        dia = numGroups[i];
+                        continue;
+                    }
+                    if (toplist[i] + 10 > sys_dia_pul_y1[2] && toplist[i] - 10 < sys_dia_pul_y1[2]) {
+                        if (sys === numGroups[i]) sys = 0;
+                        if (dia === numGroups[i]) dia = 0;
+                        pul = numGroups[i];
+                    }
+                }
+                sysElement.value = sys, diaElement.value = dia, pulElement.value = pul;
+                let renders = [], index = 0;
+                for (var i = 0; i < numGroups.length; i++) {
+                    if (numGroups[i] != 0) {
+                        renders.push({ value: numGroups[i].toString(), x: 10, y: 25 + index * 40, x1: 0, x2: 0, y1: 0, y3: 0 })
+                        index++;
+                    }
+                }
+                renderPredictions(renders);
             }
         }).catch(err => { console.log(err); });
 }
 const renderPredictions = function (predictions) {
-    if (document.getElementById("result_show")) {
-        document.getElementById("result_show").remove();
-    }
     let canvas = document.createElement("canvas");
     canvas.id = "result_show";
     let [width, height] = videoDimensions(videoElement);
@@ -170,18 +148,18 @@ const renderPredictions = function (predictions) {
     canvas.height = height;
     let ctx = canvas.getContext("2d");
     predictions.forEach(function (prediction) {
-        if (prediction.x1 != 0 && prediction.value != "0") {
-            let width = prediction.x2 - prediction.x1;
-            let height = prediction.y3 - prediction.y1;
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 4;
-            ctx.strokeRect(
-                prediction.x1,
-                prediction.y1,
-                width,
-                height
-            );
-        }
+        //if (prediction.x1 != 0 && prediction.value != "0") {
+        //    let width = prediction.x2 - prediction.x1;
+        //    let height = prediction.y3 - prediction.y1;
+        //    ctx.strokeStyle = "red";
+        //    ctx.lineWidth = 4;
+        //    ctx.strokeRect(
+        //        prediction.x1,
+        //        prediction.y1,
+        //        width,
+        //        height
+        //    );
+        //}
         let textwidth = 10;
         let textheight = 10;
         let length = 1;
@@ -203,9 +181,22 @@ const renderPredictions = function (predictions) {
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";
         ctx.fillText(prediction.value, x + length, y + 1);
-
     });
     document.body.append(canvas);
 };
-
+function Back() {
+    let sys = document.getElementById("sys").value;
+    let dia = document.getElementById("dia").value;
+    let pul = document.getElementById("pul").value;
+    let data = { sys: sys, dia: dia, pul: pul };
+    let VerificationToken = document.getElementsByName("__RequestVerificationToken")[0].value;
+    let config = { headers: { 'requestverificationtoken': VerificationToken } }
+    axios.post("/AiVision/Back", data, config)
+        .then(function (response) {
+            if (response.status === 200) {
+                let result = response.data;
+                location.href = result.redirect_uri;
+            }
+        }).catch(err => { console.log(err); });
+}
 
